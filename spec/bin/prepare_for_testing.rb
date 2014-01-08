@@ -20,7 +20,7 @@ class PrepareForTesting < Thor
         run "rails _#{rails_version}_ new #{path} -d sqlite3 -B"
         inside path do
           gsub_file "config/environments/development.rb", "config.action_mailer", "# config.action_mailer" 
-          append_file "Gemfile", "gem 'backup-rails', path: '../../'\n"
+          append_file "Gemfile", "gem 'backup_rails', path: '../../'\n"
           run "bundle install"
         end
       end

@@ -24,7 +24,7 @@ describe Backup::Rails::Generators::InstallGenerator do
                 end
               end
 
-              assert_file "Gemfile", /gem 'backup-rails'/
+              assert_file "Gemfile", /gem 'backup_rails'/
               assert_file "config/backup/config.rb"
               assert_file "config/backup/models/general.rb"
               assert_file "config/schedule.rb"
