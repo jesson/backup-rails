@@ -1,4 +1,6 @@
 # encoding: utf-8
+require 'dotenv'
+require "rails"
 
 ##
 # Backup Generated: general
@@ -7,18 +9,26 @@
 # $ backup perform -t general [-c <path_to_configuration_file>]
 #
 Backup::Model.new(:general, 'Description for general') do
+  Dotenv.load
 
-  <% root_path = Rails.root.split[0..-2].join("/") %>
-  <% source_name = Rails.root.split.last %>
+  root_path = Rails.root
   archive :code do |archive|
-    archive.root "<%= root_path %>"
-    archive.add "<%= source_name %>"
-    archive.exclude "<%= source_name %>/log"
-    archive.exclude "<%= source_name %>/tmp"
+    archive.root root_path
+    archive.add "."
+    archive.exclude root_path + '/log'
+    archive.exclude root_path + '/tmp'
   end
 
   compress_with Gzip do
 
+  end
+
+  if ENV['SSL_PASSWORD']
+    encrypt_with OpenSSL do |encryption|
+      encryption.password = ENV['SSL_PASSWORD']
+      encryption.base64   = true
+      encryption.salt     = true
+    end
   end
 
   store_with Local do |local|

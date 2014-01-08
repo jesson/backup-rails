@@ -19,5 +19,6 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency('backup', '>= 3.2.0')
   gem.add_dependency('whenever')
+  gem.add_dependency('dotenv-rails')
 end
 
