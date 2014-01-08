@@ -8,7 +8,7 @@ class BackupRails < Thor
     File.dirname(__FILE__)
   end
 
-  desc "restore", "Restore files from backup file"
+  desc "restore ARCHIVE DESTINATION", "Restore files from backup file"
   def restore archive_path, destination_path
     puts "Restoring from #{archive_path}"
     dir = Dir.mktmpdir
