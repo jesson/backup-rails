@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+require 'thor'
+
+class BackupRails < Thor
+  include Thor::Actions
+
+  def self.source_root
+    File.dirname(__FILE__)
+  end
+
+  desc "restore", "Restore files from backup file"
+  def restore archive_path, destination_path
+    puts "Restoring from #{archive_path}"
+    dir = Dir.mktmpdir
+    begin
+      system "cd #{dir} && tar -xf #{archive_path}"
+      system "cd #{destination_path.split("/")[0..-2].join("/")} && tar -xf #{dir}/general/archives/code.tar.gz"
+    ensure
+      # remove the directory.
+      FileUtils.remove_entry_secure dir
+    end
+  end
+end
+
+BackupRails.start
