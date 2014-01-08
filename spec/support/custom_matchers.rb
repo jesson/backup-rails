@@ -21,6 +21,7 @@ module CustomMatchers
   end
 
   def compare_dirs dir1, dir2
+    return false  unless File.exists?(dir1) && File.exists?(dir2)
     Dir.foreach(dir1) do |item|
       next if item == "." or item == ".."
       path1 = File.join(dir1, item)

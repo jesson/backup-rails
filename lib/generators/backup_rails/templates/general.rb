@@ -11,7 +11,7 @@ require "rails"
 Backup::Model.new(:general, 'Description for general') do
   Dotenv.load
 
-  root_path = Rails.root
+  root_path = File.dirname(__FILE__)
   archive :code do |archive|
     archive.root root_path
     archive.add "."

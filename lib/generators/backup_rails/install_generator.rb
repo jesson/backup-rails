@@ -1,7 +1,7 @@
 require 'rails/generators'
 module BackupRails
   module Generators
-    class InstallGenerator < ::Rails::Generators::Base
+    class InstallGenerator < Rails::Generators::Base
       desc "Generates configurations for backup and whenever"
 
       # Commandline options can be defined here using Thor-like options:

@@ -1,7 +1,8 @@
 #!/usr/bin/env ruby
 require 'thor'
+require 'dotenv'
 
-class BackupRails < Thor
+class BackupRailsCLI < Thor
   include Thor::Actions
 
   def self.source_root
@@ -9,12 +10,24 @@ class BackupRails < Thor
   end
 
   desc "restore ARCHIVE DESTINATION", "Restore files from backup file"
+  method_option :ssl_password,
+                :aliases => ['-sp'],
+                :required => false,
+                :type => :string,
+                :desc => "password for SSL encrypt"
   def restore archive_path, destination_path
+    Dotenv.load
     puts "Restoring from #{archive_path}"
     dir = Dir.mktmpdir
     begin
-      system "cd #{dir} && tar -xf #{archive_path}"
-      system "cd #{destination_path.split("/")[0..-2].join("/")} && tar -xf #{dir}/general/archives/code.tar.gz"
+      if options[:ssl_password]
+        create_file dir + "/simple.txt", options[:ssl_password]
+        system "cd #{dir} && openssl aes-256-cbc -d -base64 -pass file:simple.txt -in #{archive_path} -out restore.tar && rm simple.txt"
+        system "cd #{dir} && tar -xf restore.tar"
+      else
+        system "cd #{dir} && tar -xf #{archive_path}"
+      end
+      system "mkdir -p #{destination_path} && cd #{destination_path} && tar -xf #{dir}/general/archives/code.tar.gz"
     ensure
       # remove the directory.
       FileUtils.remove_entry_secure dir
@@ -22,4 +35,4 @@ class BackupRails < Thor
   end
 end
 
-BackupRails.start
+BackupRailsCLI.start
