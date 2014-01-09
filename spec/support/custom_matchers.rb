@@ -53,7 +53,7 @@ module CustomMatchers
   def check_database database_type
     case database_type
     when 'mysql'
-      client = Mysql2::Client.new(:host => "localhost", :username => "backup_rails", database: "backup_rails")
+      client = Mysql2::Client.new(:host => "localhost", :username => username, database: dbname, password: password)
       return client.query("select * from posts").count == 10
     when 'mongodb'
       Mongoid.configure.connect_to("backup_rails")
@@ -68,9 +68,9 @@ module CustomMatchers
     output = ""
     case database_type
     when 'mysql'
-      output += %x(echo \"drop database backup_rails\" | mysql -u backup_rails)
-      output += %x(echo \"create database backup_rails\" | mysql -u backup_rails)
-      output += %x(cd #{tmp_path}/test_generator && mysql -u backup_rails backup_rails < mysqldump.sql)
+      output += %x(echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password})
+      output += %x(echo \"create database #{dbname}\" | mysql -u #{username} --password=#{password})
+      output += %x(cd #{tmp_path}/test_generator && mysql -u #{username} --password=#{password} #{dbname} < mysqldump.sql)
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails)
     when 'postgresql'
@@ -84,7 +84,7 @@ module CustomMatchers
     output = ""
     case database_type
     when 'mysql'
-      output += %x(echo \"drop database backup_rails\" | mysql -u backup_rails)
+      output += %x(echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password})
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongo backup_rails --eval "db.dropDatabase()")
     when 'postgresql'

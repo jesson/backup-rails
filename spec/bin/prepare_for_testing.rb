@@ -18,7 +18,7 @@ class PrepareForTesting < Thor
       rails_versions = %w(3.2.16)
       rails_versions.each do |rails_version|
         #%w(sqlite3 mysql mongodb postgresql).each do |database_type|
-        %w(postgresql).each do |database_type|
+        %w(mysql).each do |database_type|
           path = "test_#{rails_version}_#{database_type}"
           remove_dir path
           run "gem install rails -v #{rails_version} --conservative"
@@ -34,9 +34,9 @@ class PrepareForTesting < Thor
           end
           inside path do
             if %w(mysql postgresql).include? database_type
-              gsub_file "config/database.yml", /database: (.+)$/, "database: #{dbname}"
-              gsub_file "config/database.yml", /username: (.+)$/, "username: #{username}"
-              gsub_file "config/database.yml", /password: (.+)$/, "password: '#{password}'"
+              gsub_file "config/database.yml", /database:(.+)$/, "database: #{dbname}"
+              gsub_file "config/database.yml", /username:(.+)$/, "username: #{username}"
+              gsub_file "config/database.yml", /password:(.*)$/, "password: '#{password}'"
             end
             gsub_file "config/environments/development.rb", "config.action_mailer", "# config.action_mailer" 
             append_file "Gemfile", "gem 'backup_rails', path: '../../'\n"
@@ -66,7 +66,7 @@ eos
             # dump
             case database_type
             when 'mysql'
-              run "mysqldump -u#{username} #{dbname} > mysqldump.sql"
+              run "mysqldump -u#{username} --password=#{password} #{dbname} > mysqldump.sql"
             when 'postgresql'
               run "export PGPASSWORD=#{password} && pg_dump --username=#{username} #{dbname} > pgsqldump.sql"
             when 'mongodb'

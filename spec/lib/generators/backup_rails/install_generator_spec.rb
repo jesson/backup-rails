@@ -3,9 +3,11 @@ require "generators/backup_rails/install_generator"
 
 describe BackupRails::Generators::InstallGenerator do
   let(:tmp_path) { File.expand_path("../../../../../tmp", __FILE__) }
+
   let(:dbname) { "backup_rails" }
   let(:username) { "backup_rails" }
   let(:password) { "123123123" }
+
   let(:ssl_password) { "123123123" }
   let(:backup_path) { tmp_path + "/backups" }
 
@@ -13,7 +15,7 @@ describe BackupRails::Generators::InstallGenerator do
   [false].each do |with_crypt|
 
     # Database type variants
-    %w(postgresql).each do |database_type|
+    %w(mysql).each do |database_type|
 
       # Storage type variants
       %w(local).each do |storage_type|
