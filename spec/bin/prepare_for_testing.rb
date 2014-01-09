@@ -11,6 +11,9 @@ class PrepareForTesting < Thor
   desc "Generate", "Generate rails apps for testing"
   def generate
     destination_root = File.dirname(__FILE__) + "/../../tmp"
+    dbname = "backup_rails"
+    username = "backup_rails"
+    password = "123123123"
     inside destination_root do
       rails_versions = %w(3.2.16)
       rails_versions.each do |rails_version|
@@ -31,8 +34,9 @@ class PrepareForTesting < Thor
           end
           inside path do
             if %w(mysql postgresql).include? database_type
-              gsub_file "config/database.yml", /database: (.+)$/, "database: backup_rails"
-              gsub_file "config/database.yml", /username: (.+)$/, "username: backup_rails"
+              gsub_file "config/database.yml", /database: (.+)$/, "database: #{dbname}"
+              gsub_file "config/database.yml", /username: (.+)$/, "username: #{username}"
+              gsub_file "config/database.yml", /password: (.+)$/, "password: '#{password}'"
             end
             gsub_file "config/environments/development.rb", "config.action_mailer", "# config.action_mailer" 
             append_file "Gemfile", "gem 'backup_rails', path: '../../'\n"
@@ -40,7 +44,7 @@ class PrepareForTesting < Thor
             run "bundle install"
             run "rails generate mongoid:config"  if database_type == "mongodb"
             if database_type == 'mongodb'
-              gsub_file "config/mongoid.yml", /database: (.+)$/, "database: backup_rails"
+              gsub_file "config/mongoid.yml", /database: (.+)$/, "database: #{dbname}"
               append_file "config/mongoid.yml", 
 <<-eos
 production:
@@ -48,7 +52,7 @@ production:
     default:
       hosts:
         - localhost:27017
-      database: backup_rails
+      database: #{dbname}
 eos
             end
             run "rails generate scaffold post title:string body:text published_at:datetime"
@@ -62,11 +66,11 @@ eos
             # dump
             case database_type
             when 'mysql'
-              run "mysqldump -ubackup_rails backup_rails > mysqldump.sql"
+              run "mysqldump -u#{username} #{dbname} > mysqldump.sql"
             when 'postgresql'
-              run "pg_dump --username backup_rails backup_rails > pgsqldump.sql"
+              run "export PGPASSWORD=#{password} && pg_dump --username=#{username} #{dbname} > pgsqldump.sql"
             when 'mongodb'
-              run "mongodump --db backup_rails --out mongodump"
+              run "mongodump --db #{dbname} --out mongodump"
             end
           end
         end

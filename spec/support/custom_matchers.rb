@@ -59,7 +59,7 @@ module CustomMatchers
       Mongoid.configure.connect_to("backup_rails")
       return Post.count == 10
     when 'postgresql'
-      conn = PG::Connection.new(dbname: "backup_rails", user: "backup_rails")
+      conn = PG::Connection.new(dbname: dbname, user: username, password: password)
       return conn.exec("select * from posts").values.size == 10
     end
   end
@@ -74,9 +74,9 @@ module CustomMatchers
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails)
     when 'postgresql'
-      output += %x(dropdb -Ubackup_rails backup_rails)
-      output += %x(createdb -Ubackup_rails backup_rails)
-      output += %x(cd #{tmp_path}/test_generator && psql -Ubackup_rails backup_rails < pgsqldump.sql)
+      output += %x(export PGPASSWORD=#{password} && dropdb -U#{username} #{dbname})
+      output += %x(export PGPASSWORD=#{password} && createdb -U#{username} #{dbname})
+      output += %x(cd #{tmp_path}/test_generator && export PGPASSWORD=#{password} && psql -U#{username} #{dbname} < pgsqldump.sql)
     end
   end
 
@@ -88,7 +88,7 @@ module CustomMatchers
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongo backup_rails --eval "db.dropDatabase()")
     when 'postgresql'
-      output += %x(dropdb -Ubackup_rails backup_rails)
+      output += %x(export PGPASSWORD=#{password} && dropdb -Ubackup_rails backup_rails)
     end
   end
 
