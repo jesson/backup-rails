@@ -6,13 +6,18 @@ describe BackupRails::Generators::InstallGenerator do
   let(:ssl_password) { "123123123" }
   let(:backup_path) { tmp_path + "/backups" }
 
+  # Crypt variants
   [false].each do |with_crypt|
+
+    # Database type variants
     %w(postgresql).each do |database_type|
+
+      # Storage type variants
       %w(local).each do |storage_type|
         context "Code + #{database_type.capitalize} => #{storage_type.capitalize} => With#{!with_crypt ? "out":""} crypt" do
-          rails_versions = %w(3.2.16)
 
-          rails_versions.each do |rails_version|
+          # Rails version variants
+          %w(3.2.16).each do |rails_version|
             context "(rails #{rails_version})" do
               context "backup" do
                 let(:test_rails_project_path) { "test_#{rails_version}_#{database_type}" }
