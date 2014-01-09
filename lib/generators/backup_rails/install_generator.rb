@@ -18,7 +18,8 @@ module BackupRails
       # Generator Code. Remember this is just suped-up Thor so methods are executed in order
       def install
         run "bundle exec backup generate:config --config-path=config/backup"  unless File.exists?("config/backup/config.rb")
-        template "general.rb", File.join(%w(config backup models general.rb))
+        template "general.rb", "config/backup/models/general.rb"
+        template ".env", ".env"
         run "bundle exec wheneverize ."  unless File.exists?("config/schedule.rb")
       end
 

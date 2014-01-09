@@ -24,12 +24,14 @@ describe BackupRails::Generators::InstallGenerator do
                   # restore database
                   restore_database(database_type)
 
-                  write_env(storage_type, with_crypt)
-
                   assert_file "Gemfile", /gem 'backup_rails'/
                   assert_file "config/backup/config.rb"
                   assert_file "config/backup/models/general.rb"
                   assert_file "config/schedule.rb"
+                  assert_file ".env"
+
+                  # fill .env
+                  write_env(storage_type, with_crypt)
 
                   # remove backup dir
                   %x(rm -fr #{backup_path})
@@ -50,6 +52,7 @@ describe BackupRails::Generators::InstallGenerator do
 
                   # check code
                   expect(compare_dirs(tmp_path + '/test_generator', tmp_path + '/test_generator_restore')).to be_true
+
                   # check database
                   expect(check_database(database_type)).to be_true
                 end
