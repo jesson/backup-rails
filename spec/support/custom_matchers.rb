@@ -1,3 +1,11 @@
+require 'mysql2'
+require 'mongoid'
+
+class Post
+  include Mongoid::Document
+  field :title
+end
+
 module CustomMatchers
   def assert_file(relative, *contents)
     absolute = File.expand_path(relative, tmp_path + "/test_generator")
@@ -37,5 +45,38 @@ module CustomMatchers
       end
     end
     true
+  end
+
+  def check_database database_type
+    case database_type
+    when 'mysql'
+      client = Mysql2::Client.new(:host => "localhost", :username => "backup_rails", database: "backup_rails")
+      return client.query("select * from posts").count == 10
+    when 'mongodb'
+      Mongoid.configure.connect_to("backup_rails")
+      return Post.count == 10
+    end
+  end
+
+  def restore_database database_type
+    output = ""
+    case database_type
+    when 'mysql'
+      output += %x(echo \"drop database backup_rails\" | mysql -u backup_rails)
+      output += %x(echo \"create database backup_rails\" | mysql -u backup_rails)
+      output += %x(cd #{tmp_path}/test_generator && mysql -u backup_rails backup_rails < mysqldump.sql)
+    when 'mongodb'
+      output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump)
+    end
+  end
+
+  def drop_database database_type
+    output = ""
+    case database_type
+    when 'mysql'
+      output += %x(echo \"drop database backup_rails\" | mysql -u backup_rails)
+    when 'mongodb'
+      output += %x(cd #{tmp_path}/test_generator && mongo backup_rails --eval "db.dropDatabase()")
+    end
   end
 end

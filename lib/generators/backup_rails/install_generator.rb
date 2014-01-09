@@ -19,8 +19,6 @@ module BackupRails
       def install
         run "bundle exec backup generate:config --config-path=config/backup"  unless File.exists?("config/backup/config.rb")
         template "general.rb", File.join(%w(config backup models general.rb))
-        dbconfig = YAML::load(ERB.new(IO.read(File.join('config', 'database.yml'))).result)['production']
-        #append_file("config/backup/models/general.rb", dbconfig['database'])
         run "bundle exec wheneverize ."  unless File.exists?("config/schedule.rb")
       end
 

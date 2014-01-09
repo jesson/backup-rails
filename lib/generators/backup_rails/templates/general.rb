@@ -31,9 +31,43 @@ Backup::Model.new(:general, 'Description for general') do
     end
   end
 
-  store_with Local do |local|
-    local.path = '../backup/'
-    local.keep = 5
+  if File.exists? root_path + "/config/database.yml"
+    environment = 'production'
+    dbconfig = YAML::load(ERB.new(IO.read(File.join(root_path, 'config', 'database.yml'))).result)[environment]
+    if dbconfig['adapter'] == 'mysql2'
+      database MySQL do |db|
+        db.name               = dbconfig['database']
+        db.username           = dbconfig['username']
+        db.password           = dbconfig['password']
+        db.host               = dbconfig['host']
+        db.port               = dbconfig['port']
+        db.socket             = dbconfig['socket']
+      end
+    end
+  end
+
+  if File.exists? root_path + "/config/mongoid.yml"
+    environment = 'production'
+    dbconfig = YAML::load(ERB.new(IO.read(File.join(root_path, 'config', 'mongoid.yml'))).result)[environment]
+    if dbconfig
+      database MongoDB do |db|
+        db.name               = dbconfig['sessions']['default']['database']
+        db.username           = dbconfig['sessions']['default']['username']
+        db.password           = dbconfig['sessions']['default']['password']
+        #db.host               = dbconfig['host']
+        #db.port               = dbconfig['port']
+        db.ipv6               = false
+        db.lock               = false
+        db.oplog              = false
+      end
+    end
+  end
+
+  if ENV['LOCAL_PATH']
+    store_with Local do |local|
+      local.path = ENV['LOCAL_PATH']
+      local.keep = 5
+    end
   end
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'thor'
 require 'dotenv'
+require 'yaml'
 
 class BackupRailsCLI < Thor
   include Thor::Actions
@@ -28,9 +29,29 @@ class BackupRailsCLI < Thor
         system "cd #{dir} && tar -xf #{archive_path}"
       end
       system "mkdir -p #{destination_path} && cd #{destination_path} && tar -xf #{dir}/general/archives/code.tar.gz"
+
+      # restore database
+      environment = 'production'
+      if File.exists? destination_path + "/config/database.yml"
+        dbconfig = YAML::load(ERB.new(IO.read(File.join(destination_path, 'config', 'database.yml'))).result)[environment]
+        if dbconfig['adapter'] == 'mysql2'
+          run "echo \"create database #{dbconfig['database']}\" | mysql -u #{dbconfig['username']} --password=#{dbconfig['password']}"
+          run "cd #{dir}/general/databases && gzip -d MySQL.sql.gz"
+          run "cd #{dir}/general/databases && mysql -u #{dbconfig['username']} --password=#{dbconfig['password']} #{dbconfig['database']} < MySQL.sql"
+        end
+      end
+      # mongoid
+      if File.exists? destination_path + "/config/mongoid.yml"
+        dbconfig = YAML::load(ERB.new(IO.read(File.join(destination_path, 'config', 'mongoid.yml'))).result)[environment]
+        dbconfig = dbconfig['sessions']['default']
+        run "cd #{dir}/general/databases && tar -xf MongoDB.tar.gz"
+        options = { username: dbconfig['username'], password: dbconfig['password'], db: dbconfig['database'] }
+        params = options.select {|k,v| !v.nil? && !v.empty? }.map {|k,v| "--#{k} #{v}"}.join(" ")
+        run "cd #{dir}/general/databases && mongorestore #{params} #{dir}/general/databases/MongoDB/#{dbconfig['database']}"
+      end
     ensure
       # remove the directory.
-      FileUtils.remove_entry_secure dir
+      #FileUtils.remove_entry_secure dir
     end
   end
 end

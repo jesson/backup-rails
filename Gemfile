@@ -10,9 +10,10 @@ group :development, :test do
   gem 'rb-inotify'
   gem 'thor'
 
-  gem 'railties'
-  gem 'activerecord'
+  gem 'rails'
   gem 'sqlite3'
+  gem 'mysql2'
+  gem 'mongoid'
 end
 
 # Specify your gem's dependencies in backup-rails.gemspec
