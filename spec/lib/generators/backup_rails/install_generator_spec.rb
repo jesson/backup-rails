@@ -6,8 +6,8 @@ describe BackupRails::Generators::InstallGenerator do
   let(:ssl_password) { "123123123" }
   let(:backup_path) { tmp_path + "/backup" }
 
-  [false].each do |with_crypt|
-    %w(mongodb).each do |database_type|
+  [false, true].each do |with_crypt|
+    %w(mongodb mysql).each do |database_type|
       context "Code + #{database_type.capitalize} => Local => With#{!with_crypt ? "out":""} crypt" do
         rails_versions = %w(3.2.16)
 
