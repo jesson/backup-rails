@@ -14,6 +14,7 @@ group :development, :test do
   gem 'sqlite3'
   gem 'mysql2'
   gem 'mongoid'
+  gem 'pg'
 end
 
 # Specify your gem's dependencies in backup-rails.gemspec

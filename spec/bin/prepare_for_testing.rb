@@ -15,7 +15,7 @@ class PrepareForTesting < Thor
       rails_versions = %w(3.2.16)
       rails_versions.each do |rails_version|
         #%w(sqlite3 mysql mongodb postgresql).each do |database_type|
-        %w(mongodb).each do |database_type|
+        %w(postgresql).each do |database_type|
           path = "test_#{rails_version}_#{database_type}"
           remove_dir path
           run "gem install rails -v #{rails_version} --conservative"
@@ -24,16 +24,16 @@ class PrepareForTesting < Thor
             run "rails _#{rails_version}_ new #{path} -d sqlite3 -B"
           when 'mysql'
             run "rails _#{rails_version}_ new #{path} -d mysql -B"
-            inside path do
-              gsub_file "config/database.yml", /username: root/, "username: backup_rails"
-              gsub_file "config/database.yml", /database: (.+)$/, "database: backup_rails"
-            end
           when 'postgresql'
             run "rails _#{rails_version}_ new #{path} -d postgresql -B"
           when 'mongodb'
             run "rails _#{rails_version}_ new #{path} -O -B"
           end
           inside path do
+            if %w(mysql postgresql).include? database_type
+              gsub_file "config/database.yml", /database: (.+)$/, "database: backup_rails"
+              gsub_file "config/database.yml", /username: (.+)$/, "username: backup_rails"
+            end
             gsub_file "config/environments/development.rb", "config.action_mailer", "# config.action_mailer" 
             append_file "Gemfile", "gem 'backup_rails', path: '../../'\n"
             append_file "Gemfile", "gem 'mongoid'\n"  if database_type == "mongodb"
@@ -64,6 +64,7 @@ eos
             when 'mysql'
               run "mysqldump -ubackup_rails backup_rails > mysqldump.sql"
             when 'postgresql'
+              run "pg_dump --username backup_rails backup_rails > pgsqldump.sql"
             when 'mongodb'
               run "mongodump --db backup_rails --out mongodump"
             end

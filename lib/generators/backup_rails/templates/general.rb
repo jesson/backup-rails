@@ -43,6 +43,15 @@ Backup::Model.new(:general, 'Description for general') do
         db.port               = dbconfig['port']
         db.socket             = dbconfig['socket']
       end
+    elsif dbconfig['adapter'] == 'postgresql'
+      database PostgreSQL do |db|
+        db.name               = dbconfig['database']
+        db.username           = dbconfig['username']
+        db.password           = dbconfig['password']
+        db.host               = dbconfig['host']
+        db.port               = dbconfig['port']
+        db.socket             = dbconfig['socket']
+      end
     end
   end
 

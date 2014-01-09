@@ -7,20 +7,19 @@ describe BackupRails::Generators::InstallGenerator do
   let(:backup_path) { tmp_path + "/backups" }
 
   [false].each do |with_crypt|
-    %w(mongodb).each do |database_type|
-      %w(S3).each do |storage_type|
+    %w(postgresql).each do |database_type|
+      %w(local).each do |storage_type|
         context "Code + #{database_type.capitalize} => #{storage_type.capitalize} => With#{!with_crypt ? "out":""} crypt" do
           rails_versions = %w(3.2.16)
 
           rails_versions.each do |rails_version|
-            test_rails_project_path = "test_#{rails_version}_#{database_type}"
-
             context "(rails #{rails_version})" do
               context "backup" do
+                let(:test_rails_project_path) { "test_#{rails_version}_#{database_type}" }
+                
                 it "backups & restores" do
                   # prepare project
-                  %x(cd #{tmp_path} && rm -fr test_generator && cp -r #{test_rails_project_path} test_generator)
-                  %x(cd #{tmp_path} && cd test_generator && rails generate backup_rails:install)
+                  prepare_project
 
                   # restore database
                   restore_database(database_type)
@@ -47,14 +46,7 @@ describe BackupRails::Generators::InstallGenerator do
                   check_remote_storage(storage_type)
 
                   # restore
-                  %x(cd #{tmp_path} && rm -fr test_generator_restore)
-                  if with_crypt
-                    archive_path = Dir[backup_path + "/general/*/general.tar.enc"].first
-                    %x(cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore --ssl_password=#{ssl_password})
-                  else
-                    archive_path = Dir[backup_path + "/general/*/general.tar"].first
-                    %x(cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore)
-                  end
+                  restore_project(with_crypt)
 
                   # check code
                   expect(compare_dirs(tmp_path + '/test_generator', tmp_path + '/test_generator_restore')).to be_true

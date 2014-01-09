@@ -2,6 +2,7 @@ require 'mysql2'
 require 'mongoid'
 require 'dotenv'
 require 'fog'
+require 'pg'
 
 class Post
   include Mongoid::Document
@@ -57,6 +58,9 @@ module CustomMatchers
     when 'mongodb'
       Mongoid.configure.connect_to("backup_rails")
       return Post.count == 10
+    when 'postgresql'
+      conn = PG::Connection.new(dbname: "backup_rails", user: "backup_rails")
+      return conn.exec("select * from posts").values.size == 10
     end
   end
 
@@ -69,6 +73,10 @@ module CustomMatchers
       output += %x(cd #{tmp_path}/test_generator && mysql -u backup_rails backup_rails < mysqldump.sql)
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails)
+    when 'postgresql'
+      output += %x(dropdb -Ubackup_rails backup_rails)
+      output += %x(createdb -Ubackup_rails backup_rails)
+      output += %x(cd #{tmp_path}/test_generator && psql -Ubackup_rails backup_rails < pgsqldump.sql)
     end
   end
 
@@ -79,6 +87,8 @@ module CustomMatchers
       output += %x(echo \"drop database backup_rails\" | mysql -u backup_rails)
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongo backup_rails --eval "db.dropDatabase()")
+    when 'postgresql'
+      output += %x(dropdb -Ubackup_rails backup_rails)
     end
   end
 
@@ -116,5 +126,21 @@ module CustomMatchers
         f.write file.body
       end
     end
+  end
+
+  def restore_project with_crypt
+    %x(cd #{tmp_path} && rm -fr test_generator_restore)
+    if with_crypt
+      archive_path = Dir[backup_path + "/general/*/general.tar.enc"].first
+      %x(cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore --ssl_password=#{ssl_password})
+    else
+      archive_path = Dir[backup_path + "/general/*/general.tar"].first
+      %x(cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore)
+    end
+  end
+
+  def prepare_project
+    %x(cd #{tmp_path} && rm -fr test_generator && cp -r #{test_rails_project_path} test_generator)
+    %x(cd #{tmp_path} && cd test_generator && rails generate backup_rails:install)
   end
 end
