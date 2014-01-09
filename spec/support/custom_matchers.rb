@@ -1,5 +1,7 @@
 require 'mysql2'
 require 'mongoid'
+require 'dotenv'
+require 'fog'
 
 class Post
   include Mongoid::Document
@@ -66,7 +68,7 @@ module CustomMatchers
       output += %x(echo \"create database backup_rails\" | mysql -u backup_rails)
       output += %x(cd #{tmp_path}/test_generator && mysql -u backup_rails backup_rails < mysqldump.sql)
     when 'mongodb'
-      output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump)
+      output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails)
     end
   end
 
@@ -77,6 +79,42 @@ module CustomMatchers
       output += %x(echo \"drop database backup_rails\" | mysql -u backup_rails)
     when 'mongodb'
       output += %x(cd #{tmp_path}/test_generator && mongo backup_rails --eval "db.dropDatabase()")
+    end
+  end
+
+  def write_env storage_type, with_crypt
+    Dotenv.load
+    File.open(tmp_path + "/test_generator/.env", "w") do |f|
+      f.write("SSL_PASSWORD=#{ssl_password}\n")  if with_crypt
+      case storage_type
+      when 'local'
+        f.write("LOCAL_PATH=#{backup_path}")
+      when 'S3'
+        f.write("S3_ACCESS_KEY_ID=\"#{ENV['S3_ACCESS_KEY_ID']}\"\n")
+        f.write("S3_SECRET_ACCESS_KEY=\"#{ENV['S3_SECRET_ACCESS_KEY']}\"\n")
+        f.write("S3_REGION=\"#{ENV['S3_REGION']}\"\n")
+        f.write("S3_BUCKET=\"#{ENV['S3_BUCKET']}\"\n")
+        f.write("S3_PATH=\"#{ENV['S3_PATH']}\"\n")
+      end
+    end
+  end
+
+  def check_remote_storage storage_type
+    case storage_type
+    when 'S3'
+      connection = Fog::Storage.new({
+        :provider                 => 'AWS',
+        :aws_access_key_id        => ENV['S3_ACCESS_KEY_ID'],
+        :aws_secret_access_key    => ENV['S3_SECRET_ACCESS_KEY']
+      })
+      dir = connection.directories.detect { | dir | dir.key == ENV["S3_BUCKET"] }
+      file = dir.files.max_by {|f| f.last_modified }
+      file_path = File.expand_path(file.key, tmp_path)
+      path = File.dirname(file_path)
+      %x(mkdir -p #{path})
+      File.open(file_path, "wb") do |f|
+        f.write file.body
+      end
     end
   end
 end

@@ -70,5 +70,18 @@ Backup::Model.new(:general, 'Description for general') do
     end
   end
 
+  if ENV['S3_ACCESS_KEY_ID'] && ENV['S3_SECRET_ACCESS_KEY'] && ENV['S3_BUCKET']
+    store_with S3 do |s3|
+      # AWS Credentials
+      s3.access_key_id     = ENV['S3_ACCESS_KEY_ID']
+      s3.secret_access_key = ENV['S3_SECRET_ACCESS_KEY']
+      # Or, to use a IAM Profile:
+      # s3.use_iam_profile = true
+
+      s3.region             = ENV['S3_REGION']
+      s3.bucket             = ENV['S3_BUCKET']
+      #s3.path               = ENV['S3_PATH']
+    end
+  end
 
 end

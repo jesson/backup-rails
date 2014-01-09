@@ -17,8 +17,11 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_dependency('backup', '>= 3.2.0')
+  gem.add_dependency('backup', '>= 3.3.0')
   gem.add_dependency('whenever')
   gem.add_dependency('dotenv-rails')
+  gem.add_dependency('fog', '~> 1.9.0')
+  gem.add_dependency('net-ssh', '>= 2.3.0', '<= 2.5.2')
+  gem.add_dependency('excon', '~> 0.17.0')
 end
 
