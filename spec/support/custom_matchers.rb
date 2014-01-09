@@ -68,15 +68,15 @@ module CustomMatchers
     output = ""
     case database_type
     when 'mysql'
-      output += %x(echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password})
-      output += %x(echo \"create database #{dbname}\" | mysql -u #{username} --password=#{password})
-      output += %x(cd #{tmp_path}/test_generator && mysql -u #{username} --password=#{password} #{dbname} < mysqldump.sql)
+      output += run "echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password}"
+      output += run "echo \"create database #{dbname}\" | mysql -u #{username} --password=#{password}"
+      output += run "cd #{tmp_path}/test_generator && mysql -u #{username} --password=#{password} #{dbname} < mysqldump.sql"
     when 'mongodb'
-      output += %x(cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails)
+      output += run "cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails"
     when 'postgresql'
-      output += %x(export PGPASSWORD=#{password} && dropdb -U#{username} #{dbname})
-      output += %x(export PGPASSWORD=#{password} && createdb -U#{username} #{dbname})
-      output += %x(cd #{tmp_path}/test_generator && export PGPASSWORD=#{password} && psql -U#{username} #{dbname} < pgsqldump.sql)
+      output += run "export PGPASSWORD=#{password} && dropdb -U#{username} #{dbname}"
+      output += run "export PGPASSWORD=#{password} && createdb -U#{username} #{dbname}"
+      output += run "cd #{tmp_path}/test_generator && export PGPASSWORD=#{password} && psql -U#{username} #{dbname} < pgsqldump.sql"
     end
   end
 
@@ -84,11 +84,11 @@ module CustomMatchers
     output = ""
     case database_type
     when 'mysql'
-      output += %x(echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password})
+      output += run "echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password}"
     when 'mongodb'
-      output += %x(cd #{tmp_path}/test_generator && mongo backup_rails --eval "db.dropDatabase()")
+      output += run "cd #{tmp_path}/test_generator && mongo backup_rails --eval \"db.dropDatabase()\""
     when 'postgresql'
-      output += %x(export PGPASSWORD=#{password} && dropdb -Ubackup_rails backup_rails)
+      output += run "export PGPASSWORD=#{password} && dropdb -Ubackup_rails backup_rails"
     end
   end
 
@@ -121,7 +121,7 @@ module CustomMatchers
       file = dir.files.max_by {|f| f.last_modified }
       file_path = File.expand_path(file.key, tmp_path)
       path = File.dirname(file_path)
-      %x(mkdir -p #{path})
+      run "mkdir -p #{path}"
       File.open(file_path, "wb") do |f|
         f.write file.body
       end
@@ -129,18 +129,25 @@ module CustomMatchers
   end
 
   def restore_project with_crypt
-    %x(cd #{tmp_path} && rm -fr test_generator_restore)
+    run "cd #{tmp_path} && rm -fr test_generator_restore"
     if with_crypt
       archive_path = Dir[backup_path + "/general/*/general.tar.enc"].first
-      %x(cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore --ssl_password=#{ssl_password})
+      run "cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore --ssl_password=#{ssl_password}"
     else
       archive_path = Dir[backup_path + "/general/*/general.tar"].first
-      %x(cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore)
+      run "cd #{tmp_path} && ../bin/backup_rails restore #{archive_path} #{tmp_path}/test_generator_restore"
     end
   end
 
   def prepare_project
-    %x(cd #{tmp_path} && rm -fr test_generator && cp -r #{test_rails_project_path} test_generator)
-    %x(cd #{tmp_path} && cd test_generator && rails generate backup_rails:install)
+    run "cd #{tmp_path} && rm -fr test_generator && cp -r #{test_rails_project_path} test_generator"
+    run "cd #{tmp_path} && cd test_generator && rails generate backup_rails:install"
+  end
+
+  def run command
+    output = %x(#{command})
+    puts output  unless $?.success?
+    $?.success?.should be_true, "Error run command: #{command}"
+    output
   end
 end

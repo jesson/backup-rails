@@ -15,7 +15,7 @@ describe BackupRails::Generators::InstallGenerator do
   [false].each do |with_crypt|
 
     # Database type variants
-    %w(mysql).each do |database_type|
+    %w(postgresql).each do |database_type|
 
       # Storage type variants
       %w(local).each do |storage_type|
