@@ -1,6 +1,6 @@
 # BackupRails
 
-TODO: Write a gem description
+Backup rails project with backup & whenever gems
 
 ## Installation
 
