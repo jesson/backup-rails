@@ -1,8 +1,8 @@
 require "spec_helper"
-require "generators/backup-rails/install_generator"
+require "generators/backup/rails/install_generator"
 
 describe Backup::Rails::Generators::InstallGenerator do
-  let(:tmp_path) { File.expand_path("../../../../../tmp", __FILE__) }
+  let(:tmp_path) { File.expand_path("../../../../../../tmp", __FILE__) }
 
   let(:dbname) { "backup_rails" }
   let(:username) { "backup_rails" }

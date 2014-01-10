@@ -147,7 +147,7 @@ module CustomMatchers
   end
 
   def install_config
-    p run "cd #{tmp_path}/test_generator && rails generate backup:rails:install"
+    run "cd #{tmp_path}/test_generator && rails generate backup:rails:install"
   end
 
   def run command, check_exitstatus=true
