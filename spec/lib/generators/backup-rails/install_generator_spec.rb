@@ -1,7 +1,7 @@
 require "spec_helper"
-require "generators/backup_rails/install_generator"
+require "generators/backup-rails/install_generator"
 
-describe BackupRails::Generators::InstallGenerator do
+describe Backup::Rails::Generators::InstallGenerator do
   let(:tmp_path) { File.expand_path("../../../../../tmp", __FILE__) }
 
   let(:dbname) { "backup_rails" }
@@ -36,7 +36,7 @@ describe BackupRails::Generators::InstallGenerator do
                 # restore database
                 restore_database(database_type)
 
-                assert_file "Gemfile", /gem 'backup_rails'/
+                assert_file "Gemfile", /gem 'backup-rails'/
                 assert_file "config/backup/config.rb"
                 assert_file "config/backup/models/general.rb"
                 assert_file "config/schedule.rb"

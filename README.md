@@ -1,4 +1,4 @@
-# BackupRails
+# Backup::Rails
 
 Backup rails project with backup & whenever gems
 
@@ -6,7 +6,7 @@ Backup rails project with backup & whenever gems
 
 Add this line to your application's Gemfile:
 
-    gem 'backup_rails'
+    gem 'backup-rails'
 
 And then execute:
 
@@ -14,7 +14,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install backup_rails
+    $ gem install backup-rails
 
 ## Usage
 

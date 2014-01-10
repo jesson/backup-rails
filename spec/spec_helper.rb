@@ -1,5 +1,5 @@
 require 'rails/all'
-require 'backup_rails'
+#require 'backup-rails'
 
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 

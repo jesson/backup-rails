@@ -38,7 +38,7 @@ class PrepareForTesting < Thor
               gsub_file "config/database.yml", /password:(.*)$/, "password: '#{password}'"
             end
             gsub_file "config/environments/development.rb", "config.action_mailer", "# config.action_mailer" 
-            append_file "Gemfile", "gem 'backup_rails', path: '../../'\n"
+            append_file "Gemfile", "gem 'backup-rails', path: '../../'\n"
 
             if database_type == "mongodb" 
               if rails_version == "3.2.16"

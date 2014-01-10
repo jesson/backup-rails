@@ -1,16 +1,16 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'backup_rails/version'
+require 'backup-rails/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "backup_rails"
-  gem.version       = BackupRails::VERSION
+  gem.name          = "backup-rails"
+  gem.version       = Backup::Rails::VERSION
   gem.authors       = ["Oleg Bavaev"]
   gem.email         = ["jesoba7@gmail.com"]
   gem.description   = %q{Backup rails project with backup & whenever gems}
   gem.summary       = %q{Backup rails project}
-  gem.homepage      = "https://github.com/jesson/backup_rails"
+  gem.homepage      = "https://github.com/jesson/backup-rails"
   gem.license       = "MIT"
 
   gem.files         = `git ls-files`.split($/)
