@@ -13,8 +13,17 @@ module BackupRails
       def install
         run "bundle exec backup generate:config --config-path=config/backup"  unless File.exists?("config/backup/config.rb")
         template "general.rb", "config/backup/models/general.rb"
-        template ".env", ".env"
+        if File.exists? ".env"
+          append_file ".env" do
+            File.read(File.expand_path(find_in_source_paths('.env')))
+          end
+        else
+          template ".env"
+        end
         run "bundle exec wheneverize ."  unless File.exists?("config/schedule.rb")
+        append_file "config/schedule.rb" do
+          File.read(File.expand_path(find_in_source_paths('schedule.rb')))
+        end
       end
     end
   end
