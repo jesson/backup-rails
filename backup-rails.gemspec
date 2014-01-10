@@ -22,7 +22,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'whenever'
   gem.add_dependency 'dotenv-rails'
   gem.add_dependency 'fog', '~> 1.9'
-  gem.add_dependency 'net-ssh', '>= 2.3.0', '<= 2.5.2'
+  gem.add_dependency 'net-ssh', '>= 2.3.0', '<= 2.7.2'
   gem.add_dependency 'excon', '~> 0.17.0'
 end
 
