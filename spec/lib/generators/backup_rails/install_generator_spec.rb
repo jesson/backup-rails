@@ -24,51 +24,44 @@ describe BackupRails::Generators::InstallGenerator do
           # Rails version variants
           %w(3.2.16).each do |rails_version|
             context "(rails #{rails_version})" do
-              context "backup" do
-                let(:test_rails_project_path) { "test_#{rails_version}_#{database_type}" }
-                
-                it "backups & restores" do
-                  # prepare project
-                  prepare_project
+              let(:test_rails_project_path) { "test_#{rails_version}_#{database_type}" }
+              
+              it "backups & restores" do
+                # prepare project
+                prepare_project
 
-                  # rails generate backup_rails:install
-                  install_config
+                # rails generate backup_rails:install
+                install_config
 
-                  # restore database
-                  restore_database(database_type)
+                # restore database
+                restore_database(database_type)
 
-                  assert_file "Gemfile", /gem 'backup_rails'/
-                  assert_file "config/backup/config.rb"
-                  assert_file "config/backup/models/general.rb"
-                  assert_file "config/schedule.rb"
-                  assert_file ".env"
+                assert_file "Gemfile", /gem 'backup_rails'/
+                assert_file "config/backup/config.rb"
+                assert_file "config/backup/models/general.rb"
+                assert_file "config/schedule.rb"
+                assert_file ".env"
 
-                  # fill .env
-                  write_env(storage_type, with_crypt)
+                # fill .env
+                write_env(storage_type, with_crypt)
 
-                  # remove backup dir
-                  %x(rm -fr #{backup_path})
+                # backup
+                backup_project
 
-                  # backup
-                  output = %x(cd #{tmp_path} && cd test_generator && bundle exec rake backup:backup)
-                  expect(output).to_not match /\[warn\]/
-                  expect(output).to_not match /\[error\]/
+                # drop database
+                drop_database(database_type)
 
-                  # drop database
-                  drop_database(database_type)
+                # check remote storage
+                check_remote_storage(storage_type)
 
-                  # check remote storage
-                  check_remote_storage(storage_type)
+                # restore
+                restore_project(with_crypt)
 
-                  # restore
-                  restore_project(with_crypt)
+                # check code
+                expect(compare_dirs(tmp_path + '/test_generator', tmp_path + '/test_generator_restore')).to be_true
 
-                  # check code
-                  expect(compare_dirs(tmp_path + '/test_generator', tmp_path + '/test_generator_restore')).to be_true
-
-                  # check database
-                  expect(check_database(database_type)).to be_true
-                end
+                # check database
+                expect(check_database(database_type)).to be_true
               end
             end
           end

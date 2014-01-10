@@ -156,4 +156,13 @@ module CustomMatchers
     $?.success?.should be_true, "Error run command: #{command}"  if check_exitstatus
     output
   end
+
+  def backup_project
+    # remove backup dir
+    run "rm -fr #{backup_path}"
+
+    output = run "cd #{tmp_path}/test_generator && bundle exec rake backup:backup"
+    expect(output).to_not match /\[warn\]/
+    expect(output).to_not match /\[error\]/
+  end
 end
