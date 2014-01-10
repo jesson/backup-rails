@@ -12,13 +12,13 @@ describe BackupRails::Generators::InstallGenerator do
   let(:backup_path) { tmp_path + "/backups" }
 
   # Crypt variants
-  [false].each do |with_crypt|
+  [false, true].each do |with_crypt|
 
     # Database type variants
-    %w(postgresql).each do |database_type|
+    %w(sqlite3 mysql mongodb postgresql).each do |database_type|
 
       # Storage type variants
-      %w(local).each do |storage_type|
+      %w(local S3).each do |storage_type|
         context "Code + #{database_type.capitalize} => #{storage_type.capitalize} => With#{!with_crypt ? "out":""} crypt" do
 
           # Rails version variants
@@ -30,6 +30,9 @@ describe BackupRails::Generators::InstallGenerator do
                 it "backups & restores" do
                   # prepare project
                   prepare_project
+
+                  # rails generate backup_rails:install
+                  install_config
 
                   # restore database
                   restore_database(database_type)

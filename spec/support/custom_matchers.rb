@@ -61,35 +61,38 @@ module CustomMatchers
     when 'postgresql'
       conn = PG::Connection.new(dbname: dbname, user: username, password: password)
       return conn.exec("select * from posts").values.size == 10
+    when 'sqlite3'
+      return true
     end
   end
 
   def restore_database database_type
     output = ""
+    output += drop_database database_type
     case database_type
     when 'mysql'
-      output += run "echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password}"
       output += run "echo \"create database #{dbname}\" | mysql -u #{username} --password=#{password}"
       output += run "cd #{tmp_path}/test_generator && mysql -u #{username} --password=#{password} #{dbname} < mysqldump.sql"
     when 'mongodb'
       output += run "cd #{tmp_path}/test_generator && mongorestore --db backup_rails mongodump/backup_rails"
     when 'postgresql'
-      output += run "export PGPASSWORD=#{password} && dropdb -U#{username} #{dbname}"
-      output += run "export PGPASSWORD=#{password} && createdb -U#{username} #{dbname}"
+      output += run "export PGPASSWORD=#{password} && createdb -U#{username} #{dbname}", false
       output += run "cd #{tmp_path}/test_generator && export PGPASSWORD=#{password} && psql -U#{username} #{dbname} < pgsqldump.sql"
     end
+    output
   end
 
   def drop_database database_type
     output = ""
     case database_type
     when 'mysql'
-      output += run "echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password}"
+      output += run "echo \"drop database #{dbname}\" | mysql -u #{username} --password=#{password}", false
     when 'mongodb'
-      output += run "cd #{tmp_path}/test_generator && mongo backup_rails --eval \"db.dropDatabase()\""
+      output += run "cd #{tmp_path}/test_generator && mongo backup_rails --eval \"db.dropDatabase()\"", false
     when 'postgresql'
-      output += run "export PGPASSWORD=#{password} && dropdb -Ubackup_rails backup_rails"
+      output += run "export PGPASSWORD=#{password} && dropdb -U#{username} #{dbname}", false
     end
+    output
   end
 
   def write_env storage_type, with_crypt
@@ -141,13 +144,16 @@ module CustomMatchers
 
   def prepare_project
     run "cd #{tmp_path} && rm -fr test_generator && cp -r #{test_rails_project_path} test_generator"
-    run "cd #{tmp_path} && cd test_generator && rails generate backup_rails:install"
   end
 
-  def run command
+  def install_config
+    run "cd #{tmp_path}/test_generator && rails -v && bundle exec rails generate backup_rails:install"
+  end
+
+  def run command, check_exitstatus=true
     output = %x(#{command})
-    puts output  unless $?.success?
-    $?.success?.should be_true, "Error run command: #{command}"
+    p output  unless $?.success?
+    $?.success?.should be_true, "Error run command: #{command}"  if check_exitstatus
     output
   end
 end

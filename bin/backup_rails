@@ -46,12 +46,9 @@ class BackupRailsCLI < Thor
           run "cd #{dir}/general/databases && gzip -d MySQL.sql.gz"
           run "cd #{dir}/general/databases && mysql -u #{dbconfig['username']} --password=#{dbconfig['password']} #{dbconfig['database']} < MySQL.sql"
         elsif dbconfig['adapter'] == 'postgresql'
-          options = { username: dbconfig['username'], password: dbconfig['password'] }
-          params = options.select {|k,v| !v.nil? && !v.empty? }.map {|k,v| "--#{k} #{v}"}.join(" ")
-
-          run "createdb #{params} #{dbconfig['database']}"
+          run "export PGPASSWORD=#{dbconfig['password']} && createdb -U#{dbconfig['username']} #{dbconfig['database']}"
           run "cd #{dir}/general/databases && gzip -d PostgreSQL.sql.gz"
-          run "cd #{dir}/general/databases && psql #{params} #{dbconfig['database']} < PostgreSQL.sql"
+          run "cd #{dir}/general/databases && export PGPASSWORD=#{dbconfig['password']} && psql -U#{dbconfig['username']} #{dbconfig['database']} < PostgreSQL.sql"
         end
       end
       # mongoid

@@ -17,8 +17,7 @@ class PrepareForTesting < Thor
     inside destination_root do
       rails_versions = %w(3.2.16)
       rails_versions.each do |rails_version|
-        #%w(sqlite3 mysql mongodb postgresql).each do |database_type|
-        %w(mysql).each do |database_type|
+        %w(sqlite3 mysql mongodb postgresql).each do |database_type|
           path = "test_#{rails_version}_#{database_type}"
           remove_dir path
           run "gem install rails -v #{rails_version} --conservative"
@@ -40,7 +39,15 @@ class PrepareForTesting < Thor
             end
             gsub_file "config/environments/development.rb", "config.action_mailer", "# config.action_mailer" 
             append_file "Gemfile", "gem 'backup_rails', path: '../../'\n"
-            append_file "Gemfile", "gem 'mongoid'\n"  if database_type == "mongodb"
+
+            if database_type == "mongodb" 
+              if rails_version == "3.2.16"
+                append_file "Gemfile", "gem 'mongoid'\n"  
+              else
+                append_file "Gemfile", "gem 'mongoid', github: 'mongoid/mongoid'\n"
+              end
+            end
+
             run "bundle install"
             run "rails generate mongoid:config"  if database_type == "mongodb"
             if database_type == 'mongodb'
