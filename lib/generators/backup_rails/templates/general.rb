@@ -93,4 +93,21 @@ Backup::Model.new(:general, 'Description for general') do
     end
   end
 
+  if ENV['NOTIFY_MAIL_USER_NAME']
+    notify_by Mail do |mail|
+      mail.on_success           = true
+      mail.on_warning           = true
+      mail.on_failure           = true
+
+      mail.from                 = ENV['NOTIFY_MAIL_FROM']
+      mail.to                   = ENV['NOTIFY_MAIL_TO']
+      mail.address              = ENV['NOTIFY_MAIL_ADDRESS']
+      mail.port                 = ENV['NOTIFY_MAIL_PORT']
+      mail.domain               = ENV['NOTIFY_MAIL_DOMAIN']
+      mail.user_name            = ENV['NOTIFY_MAIL_USER_NAME']
+      mail.password             = ENV['NOTIFY_MAIL_PASSWORD']
+      mail.authentication       = ENV['NOTIFY_MAIL_AUTHENTICATION']
+      mail.encryption           = :starttls
+    end
+  end
 end
