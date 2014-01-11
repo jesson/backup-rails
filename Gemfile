@@ -18,10 +18,6 @@ group :development, :test do
   gem 'bson_ext'
 end
 
-gem 'backup'
-gem 'whenever'
-gem 'dotenv-rails'
-
 # Specify your gem's dependencies in backup-rails.gemspec
 gemspec
 
