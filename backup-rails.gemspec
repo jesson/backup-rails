@@ -24,5 +24,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'fog', '~> 1.9.0'
   gem.add_runtime_dependency 'net-ssh', '>= 2.3.0', '<= 2.5.2'
   gem.add_runtime_dependency 'excon', '~> 0.17.0'
+  gem.add_runtime_dependency 'mail', '~> 2.5.0'
 end
 
