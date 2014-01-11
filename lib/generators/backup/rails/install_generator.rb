@@ -16,10 +16,10 @@ module Backup
           template "general.rb", "config/backup/models/general.rb"
           if File.exists? ".env"
             append_file ".env" do
-              File.read(File.expand_path(find_in_source_paths('.env')))
+              File.read(File.expand_path(find_in_source_paths('env.env')))
             end
           else
-            template ".env"
+            template "env.env", ".env"
           end
           run "bundle exec wheneverize ."  unless File.exists?("config/schedule.rb")
           append_file "config/schedule.rb" do

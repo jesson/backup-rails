@@ -89,7 +89,7 @@ Backup::Model.new(:general, 'Description for general') do
 
       s3.region             = ENV['S3_REGION']
       s3.bucket             = ENV['S3_BUCKET']
-      #s3.path               = ENV['S3_PATH']
+      s3.path               = ENV['S3_PATH'].dup
     end
   end
 
